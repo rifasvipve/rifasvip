@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RIFAS VIP - Sistema de Rifas</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        gold: {
+                            light: '#FFE27A',
+                            DEFAULT: '#D4AF37',
+                            dark: '#9A7B1C',
+                        },
+                        dark: {
+                            bg: '#000000',
+                            card: '#0A0A0A',
+                            border: '#222222',
+                            input: '#121212'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- EmailJS SDK -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <script type="text/javascript">
+        (function() {
+            emailjs.init("i0ubislvrNT2h93t8");
+        })();
+    </script>
+    <style>
+        body {
+            background-color: #000000;
+            color: #E2E8F0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        @keyframes marquee {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+        .animate-marquee {
+            display: inline-block;
+            white-space: nowrap;
+            animation: marquee 30s linear infinite;
+        }
+        .animate-marquee:hover {
+            animation-play-state: paused;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #000000;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #222222;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #D4AF37;
+        }
+
+        .modal-blur {
+            backdrop-filter: blur(8px);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between selection:bg-gold selection:text-black relative">
+
+    <!-- CINTILLO EN VIVO -->
+    <div class="bg-black border-b border-gold/40 text-gold py-2 px-3 overflow-hidden shadow-lg shadow-gold/5">
+        <div class="flex items-center gap-2 max-w-7xl mx-auto">
+            <span class="flex h-2.5 w-2.5 relative shrink-0">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-gold opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-gold"></span>
+            </span>
+            <span class="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-gold-light shrink-0">RIFA EN VIVO:</span>
+            <div class="overflow-hidden w-full relative">
+                <div class="animate-marquee text-[11px] sm:text-xs font-medium space-x-8 text-gray-300">
+                    <span>🎉 Carlos M. (Caracas) compró 5 boletos para iPhone 15 Pro Max</span>
+                    <span>⚡ Maria R. (Valencia) compró 10 boletos para PS5 Slim</span>
+                    <span>🔥 Juan P. (Maracaibo) compró 3 boletos para iPhone 15 Pro Max</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- NAVBAR HEADER -->
+    <header class="sticky top-0 z-40 bg-black/95 backdrop-blur border-b border-dark-border">
+        <div class="max-w-7xl mx-auto px-4 h-16 sm:h-20 flex items-center justify-between">
+            <div class="cursor-pointer" onclick="switchTab('main-raffles')">
+                <h1 class="text-xl sm:text-2xl font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-gold-light via-gold to-yellow-500 uppercase">
+                    RIFAS VIP
+                </h1>
+                <p class="text-[9px] sm:text-[10px] text-gold/60 font-semibold tracking-widest uppercase">Sistemas de Sorteos Exclusivos</p>
+            </div>
+
+            <nav class="flex items-center gap-2">
+                <button onclick="switchTab('main-raffles')" id="btn-nav-raffles" class="px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm font-bold transition flex items-center gap-1.5 bg-gold text-black shadow-md shadow-gold/20">
+                    <i class="fa-solid fa-fire"></i>
+                    <span>Sorteos</span>
+                </button>
+
+                <button onclick="switchTab('my-tickets')" id="btn-nav-tickets" class="px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm font-bold transition flex items-center gap-1.5 bg-dark-card border border-dark-border text-gray-300 hover:text-gold hover:border-gold/50">
+                    <i class="fa-solid fa-wallet text-gold"></i>
+                    <span>Mis Tickets</span>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT CONTAINER -->
+    <main class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8 flex-1 w-full">
+
+        <!-- VISTA 1: RIFAS -->
+        <section id="view-raffles" class="space-y-10">
+            <div>
+                <div class="flex items-center justify-between mb-4 pb-2 border-b border-dark-border">
+                    <h2 class="text-lg sm:text-2xl font-black text-white flex items-center gap-2 uppercase tracking-wide">
+                        <span class="text-gold">●</span> Sorteos Disponibles
+                    </h2>
+                    <span class="text-[10px] sm:text-xs text-gold/70 font-medium">1,000 Boletos (000 al 999)</span>
+                </div>
+                <div id="active-raffles-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6"></div>
+            </div>
+
+            <div class="pt-4 border-t border-dark-border/60">
+                <div class="flex items-center justify-between mb-4 pb-2 border-b border-dark-border">
+                    <h2 class="text-lg sm:text-2xl font-black text-gray-400 flex items-center gap-2 uppercase tracking-wide">
+                        <i class="fa-solid fa-flag-checkered text-gold/40"></i> Rifas Agotadas y Finalizadas
+                    </h2>
+                </div>
+                <div id="finished-raffles-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 opacity-80"></div>
+            </div>
+        </section>
+
+        <!-- VISTA 2: MIS TICKETS -->
+        <section id="view-my-tickets" class="hidden space-y-6 max-w-2xl mx-auto">
+            <div class="bg-dark-card border border-dark-border rounded-2xl p-4 sm:p-6 shadow-xl text-center space-y-4">
+                <div class="inline-flex p-3 bg-gold/10 rounded-full text-gold mb-1">
+                    <i class="fa-solid fa-magnifying-glass text-2xl sm:text-3xl"></i>
+                </div>
+                <h2 class="text-xl sm:text-2xl font-bold text-white">Consulta tus Tickets Comprados</h2>
+                <p class="text-xs sm:text-sm text-gray-400">Ingresa tu número de teléfono para verificar tus boletos asignados.</p>
+
+                <div class="flex flex-col sm:flex-row gap-2 max-w-md mx-auto pt-2">
+                    <input type="text" id="search-ticket-input" placeholder="Ej: 04146343381" class="flex-1 bg-dark-input border border-dark-border rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-gold">
+                    <button onclick="searchUserTickets()" class="bg-gold text-black font-bold px-6 py-3 rounded-xl hover:bg-gold-light transition shadow-lg shadow-gold/20 text-sm">
+                        Buscar
+                    </button>
+                </div>
+            </div>
+            <div id="my-tickets-results" class="space-y-4"></div>
+        </section>
+
+        <!-- VISTA 3: PANEL DE ADMINISTRACIÓN -->
+        <section id="view-admin" class="hidden space-y-8">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-dark-border pb-4 gap-3">
+                <div>
+                    <h2 class="text-xl sm:text-2xl font-black text-white flex items-center gap-2">
+                        <i class="fa-solid fa-user-shield text-gold"></i> Panel de Administración RIFAS VIP
+                    </h2>
+                    <p class="text-xs text-gray-400">Panel de Control General y Base de Datos</p>
+                </div>
+                <button onclick="logoutAdmin()" class="self-start sm:self-auto text-xs bg-red-500/10 text-red-400 border border-red-500/30 px-3 py-2 rounded-xl hover:bg-red-500/20 font-bold">
+                    <i class="fa-solid fa-right-from-bracket"></i> Salir de Admin
+                </button>
+            </div>
+
+            <!-- TASA DEL DÓLAR -->
+            <div class="bg-dark-card border border-gold/30 rounded-2xl p-4 sm:p-6 shadow-xl space-y-3">
+                <h3 class="text-base font-bold text-gold flex items-center gap-2">
+                    <i class="fa-solid fa-dollar-sign"></i> Configurar Tasa del Dólar en Bolívares (Bs)
+                </h3>
+                <div class="flex flex-col sm:flex-row gap-3 items-center">
+                    <div class="w-full sm:w-auto flex-1">
+                        <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Precio Dólar Actual</label>
+                        <input type="number" step="0.01" id="admin-rate-input" class="w-full bg-dark-input border border-dark-border rounded-xl p-3 text-sm text-white focus:outline-none focus:border-gold">
+                    </div>
+                    <button onclick="updateExchangeRate()" class="w-full sm:w-auto bg-gold text-black font-bold px-6 py-3 rounded-xl hover:bg-gold-light transition text-xs uppercase tracking-wider self-end">
+                        Actualizar Tasa
+                    </button>
+                </div>
+            </div>
+
+            <!-- CREAR NUEVA RIFA -->
+            <div class="bg-dark-card border border-dark-border rounded-2xl p-4 sm:p-6 shadow-xl space-y-4">
+                <h3 class="text-base font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-plus-circle text-gold"></i> Publicar Nueva Rifa
+                </h3>
+                <form id="create-raffle-form" onsubmit="handleCreateRaffle(event)" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[10px] font-bold text-gray-300 uppercase mb-1">Título de la Rifa</label>
+                        <input type="text" id="admin-title" required placeholder="Ej: iPhone 15 Pro Max" class="w-full bg-dark-input border border-dark-border rounded-xl p-3 text-xs text-white focus:outline-none focus:border-gold">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-gray-300 uppercase mb-1">Precio por Ticket (USD Base)</label>
+                        <input type="number" step="0.01" id="admin-price" required placeholder="5.00" class="w-full bg-dark-input border border-dark-border rounded-xl p-3 text-xs text-white focus:outline-none focus:border-gold">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-gray-300 uppercase mb-1">Fecha y Hora del Sorteo</label>
+                        <input type="text" id="admin-draw-time" required placeholder="Ej: Viernes 30 de Octubre - 09:00 PM" class="w-full bg-dark-input border border-dark-border rounded-xl p-3 text-xs text-white focus:outline-none focus:border-gold">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-gray-300 uppercase mb-1">URL de Imagen</label>
+                        <input type="url" id="admin-image-url" placeholder="https://..." class="w-full bg-dark-input border border-dark-border rounded-xl p-3 text-xs text-white focus:outline-none focus:border-gold">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-[10px] font-bold text-gray-300 uppercase mb-1">Descripción</label>
+                        <textarea id="admin-desc" rows="2" placeholder="Detalles..." class="w-full bg-dark-input border border-dark-border rounded-xl p-3 text-xs text-white focus:outline-none focus:border-gold"></textarea>
+                    </div>
+                    <div class="md:col-span-2 flex justify-end">
+                        <button type="submit" class="w-full sm:w-auto bg-gold text-black font-bold px-6 py-3 rounded-xl hover:bg-gold-light transition text-xs uppercase tracking-wider">
+                            Publicar Rifa
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- GESTIONAR RIFAS -->
+            <div class="bg-dark-card border border-dark-border rounded-2xl p-4 sm:p-6 shadow-xl space-y-4">
+                <h3 class="text-base font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-list-check text-gold"></i> Listado y Control de Estado
+                </h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse min-w-[600px]">
+                        <thead>
+                            <tr class="border-b border-dark-border text-[10px] text-gray-400 uppercase">
+                                <th class="p-3">Rifa</th>
+                                <th class="p-3">Precio</th>
+                                <th class="p-3">Juega</th>
+                                <th class="p-3">Estado</th>
+                                <th class="p-3 text-right">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-raffles-table-body" class="divide-y divide-dark-border/50 text-xs"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- CONFIGURAR CUENTAS Y WHATSAPP -->
+            <div class="bg-dark-card border border-dark-border rounded-2xl p-4 sm:p-6 shadow-xl space-y-4">
+                <h3 class="text-base font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-wallet text-gold"></i> Configuración de Cuentas y WhatsApp
+                </h3>
+                <form onsubmit="savePaymentSettings(event)" class="space-y-4">
+                    <div class="p-3 border border-dark-border rounded-xl space-y-2">
+                        <p class="font-bold text-green-400 text-xs flex items-center gap-1.5"><i class="fa-brands fa-whatsapp"></i> Número WhatsApp Administración</p>
+                        <input type="text" id="cfg-admin-whatsapp" placeholder="Ej: 04146343381" class="w-full bg-dark-input border border-dark-border rounded-lg p-2 text-xs text-white">
+                    </div>
+                    <div class="p-3 border border-dark-border rounded-xl space-y-2">
+                        <p class="font-bold text-gold text-xs">Mercantil Pago Móvil</p>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                            <input type="text" id="cfg-mercantil-bank" placeholder="Banco" class="bg-dark-input border border-dark-border rounded-lg p-2 text-xs text-white">
+                            <input type="text" id="cfg-mercantil-rif" placeholder="RIF/CI" class="bg-dark-input border border-dark-border rounded-lg p-2 text-xs text-white">
+                            <input type="text" id="cfg-mercantil-phone" placeholder="Teléfono" class="bg-dark-input border border-dark-border rounded-lg p-2 text-xs text-white">
+                        </div>
+                    </div>
+                    <div class="p-3 border border-dark-border rounded-xl space-y-2">
+                        <p class="font-bold text-gold text-xs">Banco de Venezuela Pago Móvil</p>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                            <input type="text" id="cfg-venezuela-bank" placeholder="Banco" class="bg-dark-input border border-dark-border rounded-lg p-2 text-xs text-white">
+                            <input type="text" id="cfg-venezuela-rif" placeholder="RIF/CI" class="bg-dark-input border border-dark-border rounded-lg p-2 text-xs text-white">
+                            <input type="text" id="cfg-venezuela-phone" placeholder="Teléfono" class="bg-dark-input border border-dark-border rounded-lg p-2 text-xs text-white">
+                        </div>
+                    </div>
+                    <div class="flex justify-end">
+                        <button type="submit" class="w-full sm:w-auto bg-gold text-black font-bold px-6 py-3 rounded-xl hover:bg-gold-light transition text-xs uppercase tracking-wider">
+                            Guardar Ajustes
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- HISTORIAL DE COMPRAS -->
+            <div class="bg-dark-card border border-gold/40 rounded-2xl p-4 sm:p-6 shadow-2xl space-y-4">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-dark-border pb-3">
+                    <div>
+                        <h3 class="text-base font-bold text-gold flex items-center gap-2">
+                            <i class="fa-solid fa-receipt"></i> Historial de Compras en Base de Datos
+                        </h3>
+                        <p class="text-[11px] text-gray-400">Registros persistentes almacenados en SQLite.</p>
+                    </div>
+                    <div class="w-full sm:w-64">
+                        <input type="text" id="admin-search-purchases" oninput="renderAdminPurchasesTable()" placeholder="Buscar por nombre o teléfono..." class="w-full bg-dark-input border border-dark-border rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-gold">
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse min-w-[750px]">
+                        <thead>
+                            <tr class="border-b border-dark-border text-[10px] text-gray-400 uppercase">
+                                <th class="p-3">Fecha / ID</th>
+                                <th class="p-3">Participante</th>
+                                <th class="p-3">Rifa</th>
+                                <th class="p-3">Boletos</th>
+                                <th class="p-3">Pago / Ref</th>
+                                <th class="p-3">Total</th>
+                                <th class="p-3 text-right">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-purchases-table-body" class="divide-y divide-dark-border/50 text-xs"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- MODAL ACCESO ADMIN -->
+    <div id="modal-admin-login" class="fixed inset-0 bg-black/80 modal-blur z-50 flex items-center justify-center p-3 sm:p-4 hidden">
+        <div class="bg-dark-card border-2 border-gold/60 rounded-2xl max-w-sm w-full shadow-2xl p-5 sm:p-6 space-y-5 text-center relative overflow-hidden">
+            <div class="absolute -top-10 -right-10 w-28 h-28 bg-gold/10 rounded-full blur-xl"></div>
+            <div class="inline-flex p-3 bg-gold/15 rounded-full text-gold border border-gold/40">
+                <i class="fa-solid fa-user-shield text-2xl sm:text-3xl"></i>
+            </div>
+            <div>
+                <h3 class="text-lg sm:text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-gold-light via-gold to-yellow-500 uppercase tracking-wide">
+                    Acceso Administrativo
+                </h3>
+                <p class="text-xs text-gray-400 mt-1">Ingresa la contraseña para gestionar el sistema.</p>
+            </div>
+            <div class="space-y-3">
+                <input type="password" id="admin-password-input" placeholder="Contraseña de administrador" class="w-full bg-dark-input border border-dark-border focus:border-gold rounded-xl px-4 py-3 text-xs text-white text-center focus:outline-none">
+                <div id="admin-login-error" class="text-red-400 text-[11px] hidden font-semibold">Contraseña incorrecta. Intenta de nuevo.</div>
+            </div>
+            <div class="grid grid-cols-2 gap-2 pt-1">
+                <button onclick="closeAdminLoginModal()" class="bg-dark-input hover:bg-dark-border text-gray-300 font-bold py-2.5 rounded-xl transition text-xs border border-dark-border">Cancelar</button>
+                <button onclick="verifyAdminPassword()" class="bg-gold hover:bg-gold-light text-black font-extrabold py-2.5 rounded-xl transition text-xs shadow-lg shadow-gold/20">Ingresar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- BOTÓN WHATSAPP -->
+    <a id="floating-whatsapp-btn" onclick="openInfoWhatsapp()" href="javascript:void(0)" class="fixed bottom-5 right-5 z-50 bg-green-500 hover:bg-green-600 text-black font-bold p-3.5 sm:px-4 sm:py-3 rounded-full shadow-2xl transition flex items-center gap-2 border-2 border-green-300">
+        <i class="fa-brands fa-whatsapp text-2xl"></i>
+        <span class="hidden sm:inline text-xs uppercase font-extrabold tracking-wider">Pedir Información</span>
+    </a>
+
+    <!-- FOOTER -->
+    <footer class="bg-dark-card border-t border-dark-border mt-12 py-8">
+        <div class="max-w-7xl mx-auto px-4 text-center space-y-4">
+            <h3 class="text-xl font-black text-gold tracking-widest uppercase">RIFAS VIP</h3>
+            <p class="text-xs text-gray-500 max-w-xl mx-auto">Plataforma transparente de rifas y sorteos digitales.</p>
+            <div class="flex justify-center gap-4">
+                <button onclick="openInfoWhatsapp()" class="text-xs font-bold text-green-400 hover:text-green-300 flex items-center gap-1.5 border border-green-500/30 px-3 py-1.5 rounded-full bg-green-500/10">
+                    <i class="fa-brands fa-whatsapp"></i> Atención al Cliente en Vivo
+                </button>
+            </div>
+            <div class="pt-2 flex flex-wrap justify-center items-center gap-4 text-xs text-gray-500 border-t border-dark-border/60 pt-4">
+                <span>© 2026 RIFAS VIP</span>
+                <span>•</span>
+                <button onclick="requestAdminAccess()" class="bg-gold/10 hover:bg-gold/20 text-gold border border-gold/30 px-3 py-1.5 rounded-lg transition text-xs font-bold flex items-center gap-1.5">
+                    <i class="fa-solid fa-gear"></i> Panel de Administración
+                </button>
+            </div>
+        </div>
+    </footer>
+
+    <!-- MODAL COMPRA -->
+    <div id="modal-buy" class="fixed inset-0 bg-black/80 modal-blur z-50 flex items-center justify-center p-3 sm:p-4 hidden">
+        <div class="bg-dark-card border border-gold/40 rounded-2xl max-w-lg w-full max-h-[92vh] overflow-y-auto shadow-2xl p-4 sm:p-6 space-y-5">
+            <div id="modal-purchase-step" class="space-y-5">
+                <div class="flex items-start justify-between border-b border-dark-border pb-3">
+                    <div>
+                        <span class="text-[9px] font-bold text-gold uppercase tracking-wider bg-gold/10 px-2 py-0.5 rounded-full border border-gold/20">1,000 Boletos (000-999)</span>
+                        <h3 id="modal-raffle-title" class="text-lg font-black text-white mt-1">Título de la Rifa</h3>
+                        <p id="modal-raffle-draw" class="text-xs text-gold font-medium mt-0.5">Juega: --</p>
+                    </div>
+                    <button onclick="closeBuyModal()" class="text-gray-400 hover:text-white text-2xl font-bold">&times;</button>
+                </div>
+
+                <div class="bg-black p-3.5 rounded-xl border border-dark-border space-y-2">
+                    <label class="block text-[10px] font-bold text-gold uppercase">1. Cantidad de Boletos</label>
+                    <div class="flex items-center gap-2">
+                        <button onclick="adjustTicketCount(-1)" class="w-9 h-9 rounded-lg bg-dark-card border border-dark-border text-white font-bold text-base hover:border-gold">-</button>
+                        <input type="number" id="ticket-count" value="1" min="1" max="100" onchange="validateTicketCount()" class="w-16 text-center bg-dark-input border border-dark-border rounded-lg py-1.5 text-white font-bold text-base focus:outline-none focus:border-gold">
+                        <button onclick="adjustTicketCount(1)" class="w-9 h-9 rounded-lg bg-dark-card border border-dark-border text-white font-bold text-base hover:border-gold">+</button>
+
+                        <div class="flex gap-1 ml-auto">
+                            <button onclick="setTicketCount(3)" class="px-2 py-1 bg-dark-card border border-dark-border hover:border-gold rounded text-[11px] font-bold text-gray-300">+3</button>
+                            <button onclick="setTicketCount(5)" class="px-2 py-1 bg-dark-card border border-dark-border hover:border-gold rounded text-[11px] font-bold text-gray-300">+5</button>
+                            <button onclick="setTicketCount(10)" class="px-2 py-1 bg-gold/20 border border-gold/40 rounded text-[11px] font-bold text-gold">+10</button>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-between items-center pt-2 border-t border-dark-border/50 text-xs">
+                        <span class="text-gray-400">Monto Total a Pagar:</span>
+                        <div class="text-right">
+                            <div id="modal-total-pay-main" class="text-base font-black text-gold">0.00 BS</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="block text-[10px] font-bold text-gold uppercase">2. Datos del Comprador</label>
+                    <div class="space-y-2">
+                        <input type="text" id="buyer-name" placeholder="Nombre y Apellido" required class="w-full bg-dark-input border border-dark-border rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-gold">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            <input type="text" id="buyer-phone" placeholder="Teléfono (WhatsApp)" required class="w-full bg-dark-input border border-dark-border rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-gold">
+                            <input type="email" id="buyer-email" placeholder="Correo Electrónico" required class="w-full bg-dark-input border border-dark-border rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-gold">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="block text-[10px] font-bold text-gold uppercase">3. Selección de Pago</label>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+                        <button type="button" onclick="selectPaymentMethod('mercantil')" id="pay-tab-mercantil" class="pay-tab-btn bg-black border border-gold rounded-xl p-2 text-center transition"><p class="text-[10px] font-bold text-white">Mercantil</p></button>
+                        <button type="button" onclick="selectPaymentMethod('venezuela')" id="pay-tab-venezuela" class="pay-tab-btn bg-black border border-dark-border rounded-xl p-2 text-center transition"><p class="text-[10px] font-bold text-white">B. Venezuela</p></button>
+                        <button type="button" onclick="selectPaymentMethod('binance')" id="pay-tab-binance" class="pay-tab-btn bg-black border border-dark-border rounded-xl p-2 text-center transition"><p class="text-[10px] font-bold text-white">Binance Pay</p></button>
+                        <button type="button" onclick="selectPaymentMethod('paypal')" id="pay-tab-paypal" class="pay-tab-btn bg-black border border-dark-border rounded-xl p-2 text-center transition"><p class="text-[10px] font-bold text-white">PayPal</p></button>
+                    </div>
+                    <div id="payment-details-box" class="bg-black border border-dark-border rounded-xl p-3 text-xs space-y-1"></div>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="block text-[10px] font-bold text-gold uppercase">4. Reportar Pago</label>
+                    <input type="text" id="payment-ref" placeholder="Número de Referencia" class="w-full bg-dark-input border border-dark-border rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-gold">
+                </div>
+
+                <button onclick="submitPurchase()" class="w-full bg-gradient-to-r from-gold via-yellow-500 to-gold text-black font-black py-3.5 rounded-xl hover:brightness-110 transition shadow-lg shadow-gold/20 uppercase tracking-wider text-xs">
+                    Confirmar y Comprar Boletos
+                </button>
+            </div>
+
+            <!-- PASO 2: TICKET EXITOSO -->
+            <div id="modal-success-step" class="hidden space-y-4 text-center">
+                <div class="bg-gradient-to-b from-yellow-500/20 via-black to-black border-2 border-gold rounded-2xl p-5 shadow-2xl relative overflow-hidden space-y-4">
+                    <div class="inline-flex p-3 bg-gold/20 rounded-full text-gold border border-gold/40">
+                        <i class="fa-solid fa-circle-check text-3xl"></i>
+                    </div>
+                    <div>
+                        <span class="bg-gold text-black font-black text-[10px] px-3 py-1 rounded-full uppercase tracking-widest shadow">COMPROBANTE OFICIAL</span>
+                        <h3 class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-gold-light via-gold to-yellow-500 uppercase mt-2">
+                            ¡YA ESTÁS PARTICIPANDO!
+                        </h3>
+                        <p id="success-raffle-title" class="text-xs text-gray-300 font-bold mt-1">Nombre de la Rifa</p>
+                    </div>
+
+                    <div class="bg-black/90 border border-gold/50 rounded-xl p-4 space-y-2">
+                        <p class="text-[10px] font-bold text-gold uppercase tracking-wider">Tus Números Asignados:</p>
+                        <div id="success-tickets-grid" class="flex flex-wrap justify-center gap-1.5 max-h-28 overflow-y-auto p-1"></div>
+                    </div>
+                </div>
+
+                <a id="whatsapp-send-btn" href="#" target="_blank" class="w-full bg-green-500 hover:bg-green-600 text-black font-black py-3.5 rounded-xl transition shadow-lg shadow-green-500/20 uppercase tracking-wider text-xs flex items-center justify-center gap-2">
+                    <i class="fa-brands fa-whatsapp text-lg"></i> Enviar Comprobante por WhatsApp
+                </a>
+
+                <button onclick="closeBuyModal()" class="text-xs text-gray-500 hover:text-white underline">Cerrar ventana</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPTS CONECTADOS A LA API DE SQLITE -->
+    <script>
+        const ADMIN_PASS = "12345678Vf";
+        const DEFAULT_PAYMENTS = {
+            adminWhatsapp: '04146343381',
+            mercantil: { bank: 'Mercantil (0105)', rif: 'J-501234567', phone: '04146343381' },
+            venezuela: { bank: 'Banco de Venezuela (0102)', rif: 'V-182345678', phone: '04146343381' },
+            binance: { payId: '829301928', email: 'pagos@rifasvip.com' },
+            paypal: { email: 'paypal@rifasvip.com' }
+        };
+
+        let raffles = [];
+        let tickets = [];
+        let paymentMethods = JSON.parse(localStorage.getItem('vip_payments')) || DEFAULT_PAYMENTS;
+        let exchangeRate = parseFloat(localStorage.getItem('vip_rate')) || 45.50;
+
+        let currentSelectedRaffle = null;
+        let selectedPayment = 'mercantil';
+
+        window.addEventListener('DOMContentLoaded', () => {
+            loadAppData();
+            loadPaymentFormInputs();
+        });
+
+        async function loadAppData() {
+            try {
+                const resRaffles = await fetch('/api/raffles');
+                raffles = await resRaffles.json();
+
+                const resTickets = await fetch('/api/tickets');
+                tickets = await resTickets.json();
+
+                renderRaffles();
+            } catch (err) {
+                console.error("Error al conectar con la base de datos:", err);
+            }
+        }
+
+        function formatPhoneForWa(phoneStr) {
+            let clean = (phoneStr || '04146343381').replace(/\D/g, '');
+            if (clean.startsWith('0')) {
+                clean = '58' + clean.substring(1);
+            } else if (!clean.startsWith('58')) {
+                clean = '58' + clean;
+            }
+            return clean;
+        }
+
+        function openInfoWhatsapp() {
+            const phone = formatPhoneForWa(paymentMethods.adminWhatsapp);
+            const msg = "¡Hola RIFAS VIP! 👋 Quisiera solicitar más información sobre los sorteos disponibles.";
+            window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+        }
+
+        function updateExchangeRate() {
+            const val = parseFloat(document.getElementById('admin-rate-input').value);
+            if (val && val > 0) {
+                exchangeRate = val;
+                localStorage.setItem('vip_rate', exchangeRate.toString());
+                renderRaffles();
+                alert('Tasa del dólar actualizada correctamente.');
+            }
+        }
+
+        function switchTab(tab) {
+            document.getElementById('view-raffles').classList.add('hidden');
+            document.getElementById('view-my-tickets').classList.add('hidden');
+            document.getElementById('view-admin').classList.add('hidden');
+
+            document.getElementById('btn-nav-raffles').className = "px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm font-bold transition flex items-center gap-1.5 bg-dark-card border border-dark-border text-gray-300 hover:text-gold hover:border-gold/50";
+            document.getElementById('btn-nav-tickets').className = "px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm font-bold transition flex items-center gap-1.5 bg-dark-card border border-dark-border text-gray-300 hover:text-gold hover:border-gold/50";
+
+            if (tab === 'main-raffles') {
+                document.getElementById('view-raffles').classList.remove('hidden');
+                document.getElementById('btn-nav-raffles').className = "px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm font-bold transition flex items-center gap-1.5 bg-gold text-black shadow-md shadow-gold/20";
+            } else if (tab === 'my-tickets') {
+                document.getElementById('view-my-tickets').classList.remove('hidden');
+                document.getElementById('btn-nav-tickets').className = "px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm font-bold transition flex items-center gap-1.5 bg-gold text-black shadow-md shadow-gold/20";
+            } else if (tab === 'admin') {
+                document.getElementById('view-admin').classList.remove('hidden');
+                document.getElementById('admin-rate-input').value = exchangeRate;
+                renderAdminTable();
+                renderAdminPurchasesTable();
+            }
+        }
+
+        function requestAdminAccess() {
+            document.getElementById('admin-password-input').value = '';
+            document.getElementById('admin-login-error').classList.add('hidden');
+            document.getElementById('modal-admin-login').classList.remove('hidden');
+            document.getElementById('admin-password-input').focus();
+        }
+
+        function closeAdminLoginModal() {
+            document.getElementById('modal-admin-login').classList.add('hidden');
+        }
+
+        function verifyAdminPassword() {
+            const pass = document.getElementById('admin-password-input').value;
+            if (pass === ADMIN_PASS) {
+                closeAdminLoginModal();
+                switchTab('admin');
+            } else {
+                document.getElementById('admin-login-error').classList.remove('hidden');
+                document.getElementById('admin-password-input').focus();
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('admin-password-input')?.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') verifyAdminPassword();
+            });
+        });
+
+        function logoutAdmin() {
+            switchTab('main-raffles');
+        }
+
+        function renderRaffles() {
+            const activeGrid = document.getElementById('active-raffles-grid');
+            const finishedGrid = document.getElementById('finished-raffles-grid');
+
+            activeGrid.innerHTML = '';
+            finishedGrid.innerHTML = '';
+
+            const activeList = raffles.filter(r => r.status === 'active');
+            const finishedList = raffles.filter(r => r.status === 'soldout' || r.status === 'finished');
+
+            if (activeList.length === 0) {
+                activeGrid.innerHTML = `<div class="col-span-full text-center py-8 text-gray-500 text-xs">No hay rifas activas en este momento.</div>`;
+            } else {
+                activeList.forEach(r => activeGrid.appendChild(createRaffleCard(r)));
+            }
+
+            if (finishedList.length === 0) {
+                finishedGrid.innerHTML = `<div class="col-span-full text-center py-6 text-gray-600 text-xs">No hay rifas pasadas o agotadas.</div>`;
+            } else {
+                finishedList.forEach(r => finishedGrid.appendChild(createRaffleCard(r)));
+            }
+        }
+
+        function createRaffleCard(raffle) {
+            const card = document.createElement('div');
+            card.className = "bg-dark-card border border-dark-border hover:border-gold/50 rounded-2xl overflow-hidden shadow-xl transition flex flex-col";
+
+            const percent = Math.min(100, Math.round((raffle.soldCount / raffle.totalTickets) * 100));
+            const priceBs = (raffle.price * exchangeRate).toFixed(2);
+            const drawInfo = raffle.drawTime || 'Próximamente';
+
+            let statusBadge = '';
+            let canBuy = raffle.status === 'active' && raffle.soldCount < raffle.totalTickets;
+
+            if (raffle.status === 'soldout' || raffle.soldCount >= raffle.totalTickets) {
+                statusBadge = `<span class="bg-gold text-black font-black text-[10px] px-3 py-1 rounded-full uppercase">AGOTADA</span>`;
+            } else if (raffle.status === 'finished') {
+                statusBadge = `<span class="bg-red-600 text-white font-black text-[10px] px-3 py-1 rounded-full uppercase">FINALIZADA</span>`;
+            }
+
+            card.innerHTML = `
+                <div class="relative h-44 sm:h-48 overflow-hidden bg-black">
+                    <img src="${raffle.image}" alt="${raffle.title}" class="w-full h-full object-cover ${!canBuy ? 'grayscale' : ''}">
+                    <div class="absolute top-2.5 left-2.5 bg-black/90 backdrop-blur text-gold font-bold text-xs px-3 py-1 rounded-full border border-gold/30">
+                        ${priceBs} BS
+                    </div>
+                    ${!canBuy ? `<div class="absolute inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center">${statusBadge}</div>` : ''}
+                </div>
+                <div class="p-4 flex-1 flex flex-col justify-between space-y-3">
+                    <div>
+                        <h3 class="font-bold text-white text-sm sm:text-base line-clamp-1">${raffle.title}</h3>
+                        <div class="mt-1.5 space-y-0.5">
+                            <p class="text-xs text-gold font-semibold flex items-center gap-1.5"><i class="fa-regular fa-clock"></i> Juega: ${drawInfo}</p>
+                            <p class="text-sm font-black text-white">Precio: <span class="text-gold">${priceBs} BS</span></p>
+                        </div>
+                    </div>
+                    <div class="space-y-1.5">
+                        <div class="flex justify-between text-[11px] font-semibold">
+                            <span class="text-gray-400">Progreso:</span>
+                            <span class="text-gold">${raffle.soldCount} / ${raffle.totalTickets} Tickets</span>
+                        </div>
+                        <div class="w-full bg-black h-2 rounded-full overflow-hidden border border-dark-border">
+                            <div class="bg-gold h-full rounded-full" style="width: ${percent}%"></div>
+                        </div>
+                    </div>
+                    ${canBuy ? `
+                        <button onclick="openBuyModal('${raffle.id}')" class="w-full bg-gold text-black font-black py-2.5 rounded-xl hover:bg-gold-light transition uppercase tracking-wider text-xs flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-ticket"></i> Comprar Boletos
+                        </button>
+                    ` : `
+                        <button disabled class="w-full bg-dark-border text-gray-500 font-bold py-2.5 rounded-xl text-xs cursor-not-allowed uppercase">No Disponible</button>
+                    `}
+                </div>
+            `;
+            return card;
+        }
+
+        function openBuyModal(raffleId) {
+            currentSelectedRaffle = raffles.find(r => r.id === raffleId);
+            if (!currentSelectedRaffle) return;
+
+            document.getElementById('modal-purchase-step').classList.remove('hidden');
+            document.getElementById('modal-success-step').classList.add('hidden');
+            document.getElementById('modal-raffle-title').innerText = currentSelectedRaffle.title;
+            document.getElementById('modal-raffle-draw').innerText = `Juega: ${currentSelectedRaffle.drawTime || 'Próximamente'}`;
+            document.getElementById('ticket-count').value = 1;
+            document.getElementById('buyer-name').value = '';
+            document.getElementById('buyer-phone').value = '';
+            document.getElementById('buyer-email').value = '';
+            document.getElementById('payment-ref').value = '';
+
+            selectPaymentMethod('mercantil');
+            document.getElementById('modal-buy').classList.remove('hidden');
+        }
+
+        function closeBuyModal() {
+            document.getElementById('modal-buy').classList.add('hidden');
+            loadAppData();
+        }
+
+        function adjustTicketCount(delta) {
+            const input = document.getElementById('ticket-count');
+            let val = parseInt(input.value) || 1;
+            input.value = Math.max(1, Math.min(100, val + delta));
+            updateModalTotal();
+        }
+
+        function setTicketCount(count) {
+            document.getElementById('ticket-count').value = count;
+            updateModalTotal();
+        }
+
+        function validateTicketCount() {
+            const input = document.getElementById('ticket-count');
+            let val = parseInt(input.value) || 1;
+            input.value = Math.max(1, Math.min(100, val));
+            updateModalTotal();
+        }
+
+        function updateModalTotal() {
+            if (!currentSelectedRaffle) return;
+            const count = parseInt(document.getElementById('ticket-count').value) || 1;
+            const totalUsd = count * currentSelectedRaffle.price;
+            const totalBs = (totalUsd * exchangeRate).toFixed(2);
+            document.getElementById('modal-total-pay-main').innerText = `${totalBs} BS`;
+        }
+
+        function selectPaymentMethod(method) {
+            selectedPayment = method;
+            document.querySelectorAll('.pay-tab-btn').forEach(btn => {
+                btn.classList.remove('border-gold');
+                btn.classList.add('border-dark-border');
+            });
+            document.getElementById(`pay-tab-${method}`).classList.add('border-gold');
+
+            const box = document.getElementById('payment-details-box');
+            const data = paymentMethods[method];
+            if (data) {
+                if (method === 'binance') {
+                    box.innerHTML = `<p class="font-bold text-gold">Binance Pay</p><p class="text-gray-300">Pay ID: ${data.payId}</p><p class="text-gray-300">Email: ${data.email}</p>`;
+                } else if (method === 'paypal') {
+                    box.innerHTML = `<p class="font-bold text-gold">PayPal</p><p class="text-gray-300">Email: ${data.email}</p>`;
+                } else {
+                    box.innerHTML = `<p class="font-bold text-gold">${data.bank}</p><p class="text-gray-300">RIF/CI: ${data.rif}</p><p class="text-gray-300">Teléfono: ${data.phone}</p>`;
+                }
+            }
+        }
+
+        async function submitPurchase() {
+            const name = document.getElementById('buyer-name').value.trim();
+            const phone = document.getElementById('buyer-phone').value.trim();
+            const email = document.getElementById('buyer-email').value.trim();
+            const ref = document.getElementById('payment-ref').value.trim();
+            const count = parseInt(document.getElementById('ticket-count').value) || 1;
+
+            if (!name || !phone || !email || !ref) {
+                alert('Completa tu nombre, teléfono, correo electrónico y referencia.');
+                return;
+            }
+
+            const assignedNumbers = [];
+            for (let i = 0; i < count; i++) {
+                let num;
+                do {
+                    num = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+                } while (assignedNumbers.includes(num));
+                assignedNumbers.push(num);
+            }
+
+            const totalAmountStr = `${(count * currentSelectedRaffle.price * exchangeRate).toFixed(2)} BS`;
+
+            const newTicket = {
+                id: 'TCK-' + Date.now(),
+                raffleTitle: currentSelectedRaffle.title,
+                buyerName: name,
+                buyerPhone: phone,
+                buyerEmail: email,
+                numbers: assignedNumbers,
+                ref: ref,
+                method: selectedPayment,
+                amountStr: totalAmountStr,
+                date: new Date().toLocaleDateString()
+            };
+
+            try {
+                const response = await fetch('/api/tickets', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(newTicket)
+                });
+                const result = await response.json();
+                if (!result.success) {
+                    alert('Error al guardar en la base de datos.');
+                    return;
+                }
+            } catch (err) {
+                console.error(err);
+            }
+
+            emailjs.send('service_frf6gsv', 'template_uldkpw8', {
+                to_email: email,
+                to_name: name,
+                raffle_title: currentSelectedRaffle.title,
+                tickets: assignedNumbers.join(', '),
+                payment_ref: ref,
+                total_amount: totalAmountStr
+            });
+
+            document.getElementById('success-raffle-title').innerText = currentSelectedRaffle.title;
+            const grid = document.getElementById('success-tickets-grid');
+            grid.innerHTML = '';
+            assignedNumbers.forEach(n => {
+                const badge = document.createElement('span');
+                badge.className = "bg-gold text-black font-black text-xs px-2.5 py-1 rounded shadow";
+                badge.innerText = n;
+                grid.appendChild(badge);
+            });
+
+            const waPhone = formatPhoneForWa(paymentMethods.adminWhatsapp);
+            const msg = `¡Hola RIFAS VIP! 👋 He registrado mi compra:\n\n🏆 *Rifa:* ${currentSelectedRaffle.title}\n👤 *Nombre:* ${name}\n📱 *Teléfono:* ${phone}\n🎟️ *Boletos:* ${assignedNumbers.join(', ')}\n🔢 *Referencia:* ${ref}`;
+            document.getElementById('whatsapp-send-btn').href = `https://wa.me/${waPhone}?text=${encodeURIComponent(msg)}`;
+
+            document.getElementById('modal-purchase-step').classList.add('hidden');
+            document.getElementById('modal-success-step').classList.remove('hidden');
+            loadAppData();
+        }
+
+        async function searchUserTickets() {
+            const query = document.getElementById('search-ticket-input').value.trim().toLowerCase();
+            const container = document.getElementById('my-tickets-results');
+            container.innerHTML = '';
+
+            if (!query) return;
+
+            try {
+                const res = await fetch('/api/tickets');
+                const allTickets = await res.json();
+                const results = allTickets.filter(t => t.buyerPhone.toLowerCase().includes(query) || t.buyerName.toLowerCase().includes(query));
+
+                if (results.length === 0) {
+                    container.innerHTML = `<div class="text-center py-6 text-gray-500 text-xs bg-dark-card border border-dark-border rounded-xl">No hay boletos registrados con este dato.</div>`;
+                    return;
+                }
+
+                results.forEach(t => {
+                    const item = document.createElement('div');
+                    item.className = "bg-dark-card border border-gold/30 rounded-xl p-4 space-y-2";
+                    item.innerHTML = `
+                        <div class="flex justify-between items-start border-b border-dark-border pb-2">
+                            <div>
+                                <p class="font-bold text-white text-xs sm:text-sm">${t.raffleTitle}</p>
+                                <p class="text-[10px] text-gray-400">${t.buyerName} (${t.buyerPhone})</p>
+                            </div>
+                            <span class="text-xs font-bold text-gold">${t.amountStr}</span>
+                        </div>
+                        <div class="pt-1">
+                            <p class="text-[10px] text-gray-400 mb-1">Boletos:</p>
+                            <div class="flex flex-wrap gap-1">${t.numbers.map(n => `<span class="bg-gold text-black font-black text-xs px-2 py-0.5 rounded">${n}</span>`).join('')}</div>
+                        </div>
+                    `;
+                    container.appendChild(item);
+                });
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function renderAdminPurchasesTable() {
+            const tbody = document.getElementById('admin-purchases-table-body');
+            const searchVal = (document.getElementById('admin-search-purchases')?.value || '').trim().toLowerCase();
+            tbody.innerHTML = '';
+
+            try {
+                const res = await fetch('/api/tickets');
+                tickets = await res.json();
+
+                const filtered = tickets.filter(t => 
+                    t.buyerName.toLowerCase().includes(searchVal) || 
+                    t.buyerPhone.toLowerCase().includes(searchVal) || 
+                    t.ref.toLowerCase().includes(searchVal)
+                );
+
+                if (filtered.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-gray-500">No hay compras registradas en la base de datos.</td></tr>`;
+                    return;
+                }
+
+                filtered.slice().reverse().forEach(t => {
+                    const tr = document.createElement('tr');
+                    tr.className = "hover:bg-dark-input transition";
+                    tr.innerHTML = `
+                        <td class="p-3"><div class="font-mono text-[10px] text-gold">${t.id}</div><div class="text-gray-400 text-[10px]">${t.date}</div></td>
+                        <td class="p-3"><div class="font-bold text-white">${t.buyerName}</div><div class="text-gray-400 text-[10px]">${t.buyerPhone}</div></td>
+                        <td class="p-3 text-gray-200 font-medium max-w-[180px] truncate">${t.raffleTitle}</td>
+                        <td class="p-3"><div class="flex flex-wrap gap-1 max-w-[150px]">${t.numbers.map(n => `<span class="bg-gold/20 border border-gold/40 text-gold font-mono text-[10px] px-1 rounded">${n}</span>`).join('')}</div></td>
+                        <td class="p-3"><span class="uppercase text-[10px] font-bold bg-dark-border px-1.5 py-0.5 rounded text-gold">${t.method}</span><div class="font-mono text-gray-300 text-[11px] mt-0.5">Ref: ${t.ref}</div></td>
+                        <td class="p-3 font-bold text-gold">${t.amountStr}</td>
+                        <td class="p-3 text-right">
+                            <button onclick="deleteTicketAdmin('${t.id}')" class="bg-red-600/20 text-red-400 hover:bg-red-600 hover:text-white p-1.5 rounded transition" title="Eliminar registro">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function deleteTicketAdmin(ticketId) {
+            if (confirm('¿Estás seguro de eliminar este registro de compra de la base de datos?')) {
+                try {
+                    await fetch(`/api/tickets/${ticketId}`, { method: 'DELETE' });
+                    renderAdminPurchasesTable();
+                    loadAppData();
+                } catch (err) {
+                    console.error(err);
+                }
+            }
+        }
+
+        async function handleCreateRaffle(e) {
+            e.preventDefault();
+            const title = document.getElementById('admin-title').value.trim();
+            const price = parseFloat(document.getElementById('admin-price').value);
+            const drawTime = document.getElementById('admin-draw-time').value.trim();
+            const desc = document.getElementById('admin-desc').value.trim();
+            const urlInput = document.getElementById('admin-image-url').value.trim();
+
+            const imageUrl = urlInput || 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=800&q=80';
+
+            const newRaffle = {
+                id: 'raf-' + Date.now(),
+                title: title,
+                price: price,
+                drawTime: drawTime || 'Por definir',
+                image: imageUrl,
+                description: desc || 'Sin descripción.',
+                soldCount: 0,
+                totalTickets: 1000,
+                status: 'active'
+            };
+
+            try {
+                await fetch('/api/raffles', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(newRaffle)
+                });
+                document.getElementById('create-raffle-form').reset();
+                loadAppData();
+                renderAdminTable();
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function renderAdminTable() {
+            const tbody = document.getElementById('admin-raffles-table-body');
+            tbody.innerHTML = '';
+
+            raffles.forEach(r => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-dark-input transition";
+                tr.innerHTML = `
+                    <td class="p-3 font-bold text-white flex items-center gap-2">
+                        <img src="${r.image}" class="w-7 h-7 rounded object-cover">
+                        <span class="truncate max-w-[120px] sm:max-w-xs">${r.title}</span>
+                    </td>
+                    <td class="p-3 text-gold">$${r.price.toFixed(2)} USD</td>
+                    <td class="p-3 text-gray-300 text-[11px]">${r.drawTime || 'N/A'}</td>
+                    <td class="p-3">
+                        <select onchange="changeRaffleStatus('${r.id}', this.value)" class="bg-dark-input border border-dark-border rounded px-2 py-1 text-[10px] text-white focus:outline-none focus:border-gold">
+                            <option value="active" ${r.status === 'active' ? 'selected' : ''}>Activa</option>
+                            <option value="soldout" ${r.status === 'soldout' ? 'selected' : ''}>Agotada</option>
+                            <option value="finished" ${r.status === 'finished' ? 'selected' : ''}>Finalizada</option>
+                        </select>
+                    </td>
+                    <td class="p-3 text-right">
+                        <button onclick="deleteRaffle('${r.id}')" class="bg-red-600/20 text-red-400 hover:bg-red-600 hover:text-white p-1.5 rounded transition">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        async function changeRaffleStatus(id, newStatus) {
+            try {
+                await fetch(`/api/raffles/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: newStatus })
+                });
+                loadAppData();
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function deleteRaffle(id) {
+            if (confirm('¿Eliminar esta rifa definitivamente?')) {
+                try {
+                    await fetch(`/api/raffles/${id}`, { method: 'DELETE' });
+                    loadAppData();
+                    renderAdminTable();
+                } catch (err) {
+                    console.error(err);
+                }
+            }
+        }
+
+        function loadPaymentFormInputs() {
+            document.getElementById('cfg-admin-whatsapp').value = paymentMethods.adminWhatsapp || '04146343381';
+            document.getElementById('cfg-mercantil-bank').value = paymentMethods.mercantil.bank;
+            document.getElementById('cfg-mercantil-rif').value = paymentMethods.mercantil.rif;
+            document.getElementById('cfg-mercantil-phone').value = paymentMethods.mercantil.phone;
+            document.getElementById('cfg-venezuela-bank').value = paymentMethods.venezuela.bank;
+            document.getElementById('cfg-venezuela-rif').value = paymentMethods.venezuela.rif;
+            document.getElementById('cfg-venezuela-phone').value = paymentMethods.venezuela.phone;
+        }
+
+        function savePaymentSettings(e) {
+            e.preventDefault();
+            paymentMethods.adminWhatsapp = document.getElementById('cfg-admin-whatsapp').value.trim() || '04146343381';
+            paymentMethods.mercantil = {
+                bank: document.getElementById('cfg-mercantil-bank').value,
+                rif: document.getElementById('cfg-mercantil-rif').value,
+                phone: document.getElementById('cfg-mercantil-phone').value
+            };
+            paymentMethods.venezuela = {
+                bank: document.getElementById('cfg-venezuela-bank').value,
+                rif: document.getElementById('cfg-venezuela-rif').value,
+                phone: document.getElementById('cfg-venezuela-phone').value
+            };
+            localStorage.setItem('vip_payments', JSON.stringify(paymentMethods));
+            alert('Ajustes y número de WhatsApp guardados.');
+        }
+    </script>
+</body>
+</html>
