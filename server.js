@@ -47,18 +47,36 @@ db.serialize(() => {
         date TEXT
     )`);
 
-    // Nueva tabla para guardar los métodos de pago configurables
-    db.run(`CREATE TABLE IF NOT EXISTS config_pagos (
+    // Tabla unificada de configuración general (Tasa, WhatsApp y Pagos)
+    db.run(`CREATE TABLE IF NOT EXISTS config_general (
         id INTEGER PRIMARY KEY,
+        exchange_rate REAL,
+        admin_whatsapp TEXT,
+        mercantil_bank TEXT,
+        mercantil_rif TEXT,
+        mercantil_phone TEXT,
+        venezuela_bank TEXT,
+        venezuela_rif TEXT,
+        venezuela_phone TEXT,
         binance_email TEXT,
         binance_pay_id TEXT,
         paypal_email TEXT
     )`);
 
-    // Insertar valores por defecto en config_pagos si está vacía
-    db.get(`SELECT COUNT(*) as count FROM config_pagos`, (err, row) => {
+    // Insertar valores por defecto si la tabla está vacía
+    db.get(`SELECT COUNT(*) as count FROM config_general`, (err, row) => {
         if (row && row.count === 0) {
-            db.run(`INSERT INTO config_pagos (id, binance_email, binance_pay_id, paypal_email) VALUES (1, 'pagos@rifasvip.com', '829301928', 'paypal@rifasvip.com')`);
+            db.run(`INSERT INTO config_general (
+                id, exchange_rate, admin_whatsapp, 
+                mercantil_bank, mercantil_rif, mercantil_phone, 
+                venezuela_bank, venezuela_rif, venezuela_phone, 
+                binance_email, binance_pay_id, paypal_email
+            ) VALUES (
+                1, 45.50, '04146343381',
+                'Mercantil (0105)', 'J-501234567', '04146343381',
+                'Banco de Venezuela (0102)', 'V-182345678', '04146343381',
+                'pagos@rifasvip.com', '829301928', 'paypal@rifasvip.com'
+            )`);
         }
     });
 
@@ -100,27 +118,52 @@ db.serialize(() => {
     });
 });
 
-// API Endpoints para Configuración de Pagos (Binance y PayPal)
-app.get('/api/config/pagos', (req, res) => {
-    db.get("SELECT * FROM config_pagos WHERE id = 1", (err, row) => {
+// API Endpoints para Configuración General (Tasa, Cuentas y WhatsApp)
+app.get('/api/config', (req, res) => {
+    db.get("SELECT * FROM config_general WHERE id = 1", (err, row) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json(row || {});
     });
 });
 
-app.post('/api/config/pagos', (req, res) => {
-    const { binance_email, binance_pay_id, paypal_email } = req.body;
+app.post('/api/config', (req, res) => {
+    const { 
+        exchange_rate, admin_whatsapp, 
+        mercantil_bank, mercantil_rif, mercantil_phone, 
+        venezuela_bank, venezuela_rif, venezuela_phone, 
+        binance_email, binance_pay_id, paypal_email 
+    } = req.body;
+
     const query = `
-        INSERT INTO config_pagos (id, binance_email, binance_pay_id, paypal_email)
-        VALUES (1, ?, ?, ?)
+        INSERT INTO config_general (
+            id, exchange_rate, admin_whatsapp, 
+            mercantil_bank, mercantil_rif, mercantil_phone, 
+            venezuela_bank, venezuela_rif, venezuela_phone, 
+            binance_email, binance_pay_id, paypal_email
+        )
+        VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(id) DO UPDATE SET
+            exchange_rate = COALESCE(excluded.exchange_rate, exchange_rate),
+            admin_whatsapp = excluded.admin_whatsapp,
+            mercantil_bank = excluded.mercantil_bank,
+            mercantil_rif = excluded.mercantil_rif,
+            mercantil_phone = excluded.mercantil_phone,
+            venezuela_bank = excluded.venezuela_bank,
+            venezuela_rif = excluded.venezuela_rif,
+            venezuela_phone = excluded.venezuela_phone,
             binance_email = excluded.binance_email,
             binance_pay_id = excluded.binance_pay_id,
             paypal_email = excluded.paypal_email
     `;
-    db.run(query, [binance_email, binance_pay_id, paypal_email], function(err) {
+
+    db.run(query, [
+        exchange_rate, admin_whatsapp, 
+        mercantil_bank, mercantil_rif, mercantil_phone, 
+        venezuela_bank, venezuela_rif, venezuela_phone, 
+        binance_email, binance_pay_id, paypal_email
+    ], function(err) {
         if (err) return res.status(500).json({ error: err.message });
-        res.json({ success: true, message: "Métodos de pago actualizados correctamente" });
+        res.json({ success: true, message: "Configuración actualizada correctamente en la base de datos" });
     });
 });
 

@@ -178,20 +178,53 @@
                 </button>
             </div>
 
-            <!-- TASA DEL DÓLAR -->
-            <div class="bg-dark-card border border-gold/30 rounded-2xl p-4 sm:p-6 shadow-xl space-y-3">
+            <!-- CONFIGURAR TASA, CUENTAS Y WHATSAPP DESDE UN SOLO LUGAR PERSISTENTE -->
+            <div class="bg-dark-card border border-gold/30 rounded-2xl p-4 sm:p-6 shadow-xl space-y-4">
                 <h3 class="text-base font-bold text-gold flex items-center gap-2">
-                    <i class="fa-solid fa-dollar-sign"></i> Configurar Tasa del Dólar en Bolívares (Bs)
+                    <i class="fa-solid fa-sliders"></i> Configuración General (Base de Datos)
                 </h3>
-                <div class="flex flex-col sm:flex-row gap-3 items-center">
-                    <div class="w-full sm:w-auto flex-1">
-                        <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Precio Dólar Actual</label>
-                        <input type="number" step="0.01" id="admin-rate-input" class="w-full bg-dark-input border border-dark-border rounded-xl p-3 text-sm text-white focus:outline-none focus:border-gold">
+                <form onsubmit="saveAllSettings(event)" class="space-y-4">
+                    <div class="p-3 border border-dark-border rounded-xl space-y-2">
+                        <label class="block text-[10px] font-bold text-gray-300 uppercase mb-1">Precio Dólar Actual (Tasa en Bs)</label>
+                        <input type="number" step="0.01" id="admin-rate-input" class="w-full bg-dark-input border border-dark-border rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-gold">
                     </div>
-                    <button onclick="updateExchangeRate()" class="w-full sm:w-auto bg-gold text-black font-bold px-6 py-3 rounded-xl hover:bg-gold-light transition text-xs uppercase tracking-wider self-end">
-                        Actualizar Tasa
-                    </button>
-                </div>
+                    <div class="p-3 border border-dark-border rounded-xl space-y-2">
+                        <p class="font-bold text-green-400 text-xs flex items-center gap-1.5"><i class="fa-brands fa-whatsapp"></i> Número WhatsApp Administración</p>
+                        <input type="text" id="cfg-admin-whatsapp" placeholder="Ej: 04146343381" class="w-full bg-dark-input border border-dark-border rounded-lg p-2 text-xs text-white">
+                    </div>
+                    <div class="p-3 border border-dark-border rounded-xl space-y-2">
+                        <p class="font-bold text-gold text-xs">Mercantil Pago Móvil</p>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                            <input type="text" id="cfg-mercantil-bank" placeholder="Banco" class="bg-dark-input border border-dark-border rounded-lg p-2 text-xs text-white">
+                            <input type="text" id="cfg-mercantil-rif" placeholder="RIF/CI" class="bg-dark-input border border-dark-border rounded-lg p-2 text-xs text-white">
+                            <input type="text" id="cfg-mercantil-phone" placeholder="Teléfono" class="bg-dark-input border border-dark-border rounded-lg p-2 text-xs text-white">
+                        </div>
+                    </div>
+                    <div class="p-3 border border-dark-border rounded-xl space-y-2">
+                        <p class="font-bold text-gold text-xs">Banco de Venezuela Pago Móvil</p>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                            <input type="text" id="cfg-venezuela-bank" placeholder="Banco" class="bg-dark-input border border-dark-border rounded-lg p-2 text-xs text-white">
+                            <input type="text" id="cfg-venezuela-rif" placeholder="RIF/CI" class="bg-dark-input border border-dark-border rounded-lg p-2 text-xs text-white">
+                            <input type="text" id="cfg-venezuela-phone" placeholder="Teléfono" class="bg-dark-input border border-dark-border rounded-lg p-2 text-xs text-white">
+                        </div>
+                    </div>
+                    <div class="p-3 border border-dark-border rounded-xl space-y-2">
+                        <p class="font-bold text-gold text-xs">Binance Pay</p>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            <input type="text" id="cfg-binance-email" placeholder="Correo Binance" class="bg-dark-input border border-dark-border rounded-lg p-2 text-xs text-white">
+                            <input type="text" id="cfg-binance-payid" placeholder="Binance Pay ID" class="bg-dark-input border border-dark-border rounded-lg p-2 text-xs text-white">
+                        </div>
+                    </div>
+                    <div class="p-3 border border-dark-border rounded-xl space-y-2">
+                        <p class="font-bold text-gold text-xs">PayPal</p>
+                        <input type="text" id="cfg-paypal-email" placeholder="Correo PayPal" class="w-full bg-dark-input border border-dark-border rounded-lg p-2 text-xs text-white">
+                    </div>
+                    <div class="flex justify-end">
+                        <button type="submit" class="w-full sm:w-auto bg-gold text-black font-bold px-6 py-3 rounded-xl hover:bg-gold-light transition text-xs uppercase tracking-wider">
+                            Guardar Toda la Configuración
+                        </button>
+                    </div>
+                </form>
             </div>
 
             <!-- CREAR NUEVA RIFA -->
@@ -247,51 +280,6 @@
                         <tbody id="admin-raffles-table-body" class="divide-y divide-dark-border/50 text-xs"></tbody>
                     </table>
                 </div>
-            </div>
-
-            <!-- CONFIGURAR CUENTAS, WHATSAPP, BINANCE Y PAYPAL -->
-            <div class="bg-dark-card border border-dark-border rounded-2xl p-4 sm:p-6 shadow-xl space-y-4">
-                <h3 class="text-base font-bold text-white flex items-center gap-2">
-                    <i class="fa-solid fa-wallet text-gold"></i> Configuración de Cuentas, Binance, PayPal y WhatsApp
-                </h3>
-                <form onsubmit="savePaymentSettings(event)" class="space-y-4">
-                    <div class="p-3 border border-dark-border rounded-xl space-y-2">
-                        <p class="font-bold text-green-400 text-xs flex items-center gap-1.5"><i class="fa-brands fa-whatsapp"></i> Número WhatsApp Administración</p>
-                        <input type="text" id="cfg-admin-whatsapp" placeholder="Ej: 04146343381" class="w-full bg-dark-input border border-dark-border rounded-lg p-2 text-xs text-white">
-                    </div>
-                    <div class="p-3 border border-dark-border rounded-xl space-y-2">
-                        <p class="font-bold text-gold text-xs">Mercantil Pago Móvil</p>
-                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                            <input type="text" id="cfg-mercantil-bank" placeholder="Banco" class="bg-dark-input border border-dark-border rounded-lg p-2 text-xs text-white">
-                            <input type="text" id="cfg-mercantil-rif" placeholder="RIF/CI" class="bg-dark-input border border-dark-border rounded-lg p-2 text-xs text-white">
-                            <input type="text" id="cfg-mercantil-phone" placeholder="Teléfono" class="bg-dark-input border border-dark-border rounded-lg p-2 text-xs text-white">
-                        </div>
-                    </div>
-                    <div class="p-3 border border-dark-border rounded-xl space-y-2">
-                        <p class="font-bold text-gold text-xs">Banco de Venezuela Pago Móvil</p>
-                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                            <input type="text" id="cfg-venezuela-bank" placeholder="Banco" class="bg-dark-input border border-dark-border rounded-lg p-2 text-xs text-white">
-                            <input type="text" id="cfg-venezuela-rif" placeholder="RIF/CI" class="bg-dark-input border border-dark-border rounded-lg p-2 text-xs text-white">
-                            <input type="text" id="cfg-venezuela-phone" placeholder="Teléfono" class="bg-dark-input border border-dark-border rounded-lg p-2 text-xs text-white">
-                        </div>
-                    </div>
-                    <div class="p-3 border border-dark-border rounded-xl space-y-2">
-                        <p class="font-bold text-gold text-xs">Binance Pay</p>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                            <input type="text" id="cfg-binance-email" placeholder="Correo Binance" class="bg-dark-input border border-dark-border rounded-lg p-2 text-xs text-white">
-                            <input type="text" id="cfg-binance-payid" placeholder="Binance Pay ID" class="bg-dark-input border border-dark-border rounded-lg p-2 text-xs text-white">
-                        </div>
-                    </div>
-                    <div class="p-3 border border-dark-border rounded-xl space-y-2">
-                        <p class="font-bold text-gold text-xs">PayPal</p>
-                        <input type="text" id="cfg-paypal-email" placeholder="Correo PayPal" class="w-full bg-dark-input border border-dark-border rounded-lg p-2 text-xs text-white">
-                    </div>
-                    <div class="flex justify-end">
-                        <button type="submit" class="w-full sm:w-auto bg-gold text-black font-bold px-6 py-3 rounded-xl hover:bg-gold-light transition text-xs uppercase tracking-wider">
-                            Guardar Ajustes de Pago
-                        </button>
-                    </div>
-                </form>
             </div>
 
             <!-- HISTORIAL DE COMPRAS -->
@@ -478,7 +466,8 @@
     <script>
         const ADMIN_PASS = "12345678Vf";
         
-        let paymentMethods = {
+        let appConfig = {
+            exchangeRate: 45.50,
             adminWhatsapp: '04146343381',
             mercantil: { bank: 'Mercantil (0105)', rif: 'J-501234567', phone: '04146343381' },
             venezuela: { bank: 'Banco de Venezuela (0102)', rif: 'V-182345678', phone: '04146343381' },
@@ -488,27 +477,29 @@
 
         let raffles = [];
         let tickets = [];
-        let exchangeRate = parseFloat(localStorage.getItem('vip_rate')) || 45.50;
-
         let currentSelectedRaffle = null;
         let selectedPayment = 'mercantil';
 
         window.addEventListener('DOMContentLoaded', () => {
-            loadPaymentSettings();
+            loadGlobalConfig();
             loadAppData();
         });
 
-        async function loadPaymentSettings() {
+        async function loadGlobalConfig() {
             try {
-                const res = await fetch('/api/config/pagos');
+                const res = await fetch('/api/config');
                 const data = await res.json();
-                if (data) {
-                    if (data.binance_email) paymentMethods.binance.email = data.binance_email;
-                    if (data.binance_pay_id) paymentMethods.binance.payId = data.binance_pay_id;
-                    if (data.paypal_email) paymentMethods.paypal.email = data.paypal_email;
+                if (data && data.id) {
+                    appConfig.exchangeRate = data.exchange_rate || 45.50;
+                    appConfig.adminWhatsapp = data.admin_whatsapp || '04146343381';
+                    appConfig.mercantil = { bank: data.mercantil_bank, rif: data.mercantil_rif, phone: data.mercantil_phone };
+                    appConfig.venezuela = { bank: data.venezuela_bank, rif: data.venezuela_rif, phone: data.venezuela_phone };
+                    appConfig.binance = { email: data.binance_email, payId: data.binance_pay_id };
+                    appConfig.paypal = { email: data.paypal_email };
                 }
+                renderRaffles();
             } catch (err) {
-                console.error("Error al cargar métodos de pago:", err);
+                console.error("Error al cargar configuración:", err);
             }
         }
 
@@ -537,19 +528,9 @@
         }
 
         function openInfoWhatsapp() {
-            const phone = formatPhoneForWa(paymentMethods.adminWhatsapp);
+            const phone = formatPhoneForWa(appConfig.adminWhatsapp);
             const msg = "¡Hola RIFAS VIP! 👋 Quisiera solicitar más información sobre los sorteos disponibles.";
             window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
-        }
-
-        function updateExchangeRate() {
-            const val = parseFloat(document.getElementById('admin-rate-input').value);
-            if (val && val > 0) {
-                exchangeRate = val;
-                localStorage.setItem('vip_rate', exchangeRate.toString());
-                renderRaffles();
-                alert('Tasa del dólar actualizada correctamente.');
-            }
         }
 
         function switchTab(tab) {
@@ -568,8 +549,7 @@
                 document.getElementById('btn-nav-tickets').className = "px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm font-bold transition flex items-center gap-1.5 bg-gold text-black shadow-md shadow-gold/20";
             } else if (tab === 'admin') {
                 document.getElementById('view-admin').classList.remove('hidden');
-                document.getElementById('admin-rate-input').value = exchangeRate;
-                loadPaymentFormInputs();
+                loadConfigFormInputs();
                 renderAdminTable();
                 renderAdminPurchasesTable();
             }
@@ -635,7 +615,7 @@
             card.className = "bg-dark-card border border-dark-border hover:border-gold/50 rounded-2xl overflow-hidden shadow-xl transition flex flex-col";
 
             const percent = Math.min(100, Math.round((raffle.soldCount / raffle.totalTickets) * 100));
-            const priceBs = (raffle.price * exchangeRate).toFixed(2);
+            const priceBs = (raffle.price * appConfig.exchangeRate).toFixed(2);
             const drawInfo = raffle.drawTime || 'Próximamente';
 
             let statusBadge = '';
@@ -730,7 +710,7 @@
             if (!currentSelectedRaffle) return;
             const count = parseInt(document.getElementById('ticket-count').value) || 1;
             const totalUsd = count * currentSelectedRaffle.price;
-            const totalBs = (totalUsd * exchangeRate).toFixed(2);
+            const totalBs = (totalUsd * appConfig.exchangeRate).toFixed(2);
             document.getElementById('modal-total-pay-main').innerText = `${totalBs} BS`;
         }
 
@@ -743,15 +723,14 @@
             document.getElementById(`pay-tab-${method}`).classList.add('border-gold');
 
             const box = document.getElementById('payment-details-box');
-            const data = paymentMethods[method];
-            if (data) {
-                if (method === 'binance') {
-                    box.innerHTML = `<p class="font-bold text-gold">Binance Pay</p><p class="text-gray-300">Pay ID: ${data.payId}</p><p class="text-gray-300">Email: ${data.email}</p>`;
-                } else if (method === 'paypal') {
-                    box.innerHTML = `<p class="font-bold text-gold">PayPal</p><p class="text-gray-300">Email: ${data.email}</p>`;
-                } else {
-                    box.innerHTML = `<p class="font-bold text-gold">${data.bank}</p><p class="text-gray-300">RIF/CI: ${data.rif}</p><p class="text-gray-300">Teléfono: ${data.phone}</p>`;
-                }
+            if (method === 'binance') {
+                box.innerHTML = `<p class="font-bold text-gold">Binance Pay</p><p class="text-gray-300">Pay ID: ${appConfig.binance.payId}</p><p class="text-gray-300">Email: ${appConfig.binance.email}</p>`;
+            } else if (method === 'paypal') {
+                box.innerHTML = `<p class="font-bold text-gold">PayPal</p><p class="text-gray-300">Email: ${appConfig.paypal.email}</p>`;
+            } else if (method === 'venezuela') {
+                box.innerHTML = `<p class="font-bold text-gold">${appConfig.venezuela.bank}</p><p class="text-gray-300">RIF/CI: ${appConfig.venezuela.rif}</p><p class="text-gray-300">Teléfono: ${appConfig.venezuela.phone}</p>`;
+            } else {
+                box.innerHTML = `<p class="font-bold text-gold">${appConfig.mercantil.bank}</p><p class="text-gray-300">RIF/CI: ${appConfig.mercantil.rif}</p><p class="text-gray-300">Teléfono: ${appConfig.mercantil.phone}</p>`;
             }
         }
 
@@ -776,7 +755,7 @@
                 assignedNumbers.push(num);
             }
 
-            const totalAmountStr = `${(count * currentSelectedRaffle.price * exchangeRate).toFixed(2)} BS`;
+            const totalAmountStr = `${(count * currentSelectedRaffle.price * appConfig.exchangeRate).toFixed(2)} BS`;
 
             const newTicket = {
                 id: 'TCK-' + Date.now(),
@@ -825,7 +804,7 @@
                 grid.appendChild(badge);
             });
 
-            const waPhone = formatPhoneForWa(paymentMethods.adminWhatsapp);
+            const waPhone = formatPhoneForWa(appConfig.adminWhatsapp);
             const msg = `¡Hola RIFAS VIP! 👋 He registrado mi compra:\n\n🏆 *Rifa:* ${currentSelectedRaffle.title}\n👤 *Nombre:* ${name}\n📱 *Teléfono:* ${phone}\n🎟️ *Boletos:* ${assignedNumbers.join(', ')}\n🔢 *Referencia:* ${ref}`;
             document.getElementById('whatsapp-send-btn').href = `https://wa.me/${waPhone}?text=${encodeURIComponent(msg)}`;
 
@@ -1021,53 +1000,46 @@
             }
         }
 
-        function loadPaymentFormInputs() {
-            document.getElementById('cfg-admin-whatsapp').value = paymentMethods.adminWhatsapp || '04146343381';
-            document.getElementById('cfg-mercantil-bank').value = paymentMethods.mercantil.bank;
-            document.getElementById('cfg-mercantil-rif').value = paymentMethods.mercantil.rif;
-            document.getElementById('cfg-mercantil-phone').value = paymentMethods.mercantil.phone;
-            document.getElementById('cfg-venezuela-bank').value = paymentMethods.venezuela.bank;
-            document.getElementById('cfg-venezuela-rif').value = paymentMethods.venezuela.rif;
-            document.getElementById('cfg-venezuela-phone').value = paymentMethods.venezuela.phone;
-            document.getElementById('cfg-binance-email').value = paymentMethods.binance.email;
-            document.getElementById('cfg-binance-payid').value = paymentMethods.binance.payId;
-            document.getElementById('cfg-paypal-email').value = paymentMethods.paypal.email;
+        function loadConfigFormInputs() {
+            document.getElementById('admin-rate-input').value = appConfig.exchangeRate;
+            document.getElementById('cfg-admin-whatsapp').value = appConfig.adminWhatsapp || '04146343381';
+            document.getElementById('cfg-mercantil-bank').value = appConfig.mercantil.bank;
+            document.getElementById('cfg-mercantil-rif').value = appConfig.mercantil.rif;
+            document.getElementById('cfg-mercantil-phone').value = appConfig.mercantil.phone;
+            document.getElementById('cfg-venezuela-bank').value = appConfig.venezuela.bank;
+            document.getElementById('cfg-venezuela-rif').value = appConfig.venezuela.rif;
+            document.getElementById('cfg-venezuela-phone').value = appConfig.venezuela.phone;
+            document.getElementById('cfg-binance-email').value = appConfig.binance.email;
+            document.getElementById('cfg-binance-payid').value = appConfig.binance.payId;
+            document.getElementById('cfg-paypal-email').value = appConfig.paypal.email;
         }
 
-        async function savePaymentSettings(e) {
+        async function saveAllSettings(e) {
             e.preventDefault();
-            paymentMethods.adminWhatsapp = document.getElementById('cfg-admin-whatsapp').value.trim() || '04146343381';
-            paymentMethods.mercantil = {
-                bank: document.getElementById('cfg-mercantil-bank').value,
-                rif: document.getElementById('cfg-mercantil-rif').value,
-                phone: document.getElementById('cfg-mercantil-phone').value
-            };
-            paymentMethods.venezuela = {
-                bank: document.getElementById('cfg-venezuela-bank').value,
-                rif: document.getElementById('cfg-venezuela-rif').value,
-                phone: document.getElementById('cfg-venezuela-phone').value
-            };
-            paymentMethods.binance = {
-                email: document.getElementById('cfg-binance-email').value,
-                payId: document.getElementById('cfg-binance-payid').value
-            };
-            paymentMethods.paypal = {
-                email: document.getElementById('cfg-paypal-email').value
+            const newConfig = {
+                exchange_rate: parseFloat(document.getElementById('admin-rate-input').value) || 45.50,
+                admin_whatsapp: document.getElementById('cfg-admin-whatsapp').value.trim(),
+                mercantil_bank: document.getElementById('cfg-mercantil-bank').value.trim(),
+                mercantil_rif: document.getElementById('cfg-mercantil-rif').value.trim(),
+                mercantil_phone: document.getElementById('cfg-mercantil-phone').value.trim(),
+                venezuela_bank: document.getElementById('cfg-venezuela-bank').value.trim(),
+                venezuela_rif: document.getElementById('cfg-venezuela-rif').value.trim(),
+                venezuela_phone: document.getElementById('cfg-venezuela-phone').value.trim(),
+                binance_email: document.getElementById('cfg-binance-email').value.trim(),
+                binance_pay_id: document.getElementById('cfg-binance-payid').value.trim(),
+                paypal_email: document.getElementById('cfg-paypal-email').value.trim()
             };
 
             try {
-                const response = await fetch('/api/config/pagos', {
+                const response = await fetch('/api/config', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        binance_email: paymentMethods.binance.email,
-                        binance_pay_id: paymentMethods.binance.payId,
-                        paypal_email: paymentMethods.paypal.email
-                    })
+                    body: JSON.stringify(newConfig)
                 });
                 const result = await response.json();
                 if (result.success) {
-                    alert('¡Ajustes y cuentas de pago guardados correctamente en la base de datos!');
+                    alert('¡Tasa, cuentas y ajustes guardados permanentemente en la base de datos!');
+                    loadGlobalConfig();
                 } else {
                     alert('Error al guardar en el servidor.');
                 }
