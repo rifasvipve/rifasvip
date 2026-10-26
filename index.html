@@ -293,8 +293,8 @@
                     </div>
                     <div class="w-full sm:w-64">
                         <select id="admin-raffle-select" onchange="loadRaffleNumbersGrid()" class="w-full bg-dark-input border border-dark-border rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-gold">
-    <option value="">-- Seleccionar Rifa --</option>
-</select>
+                            <option value="">-- Seleccionar Rifa --</option>
+                        </select>
                     </div>
                 </div>
 
@@ -1103,7 +1103,8 @@
             }
 
             try {
-                const res = await fetch(`/api/raffles/${encodeURIComponent(title)}/taken-numbers`);
+                const encodedTitle = encodeURIComponent(title);
+                const res = await fetch(`/api/raffles/${encodedTitle}/taken-numbers`);
                 const takenMap = await res.json();
 
                 for (let i = 0; i < 1000; i++) {
@@ -1131,6 +1132,7 @@
                 }
             } catch (err) {
                 console.error("Error al cargar números:", err);
+                gridContainer.innerHTML = `<p class="col-span-full text-center py-6 text-red-400 text-xs">Error al cargar los números del servidor.</p>`;
             }
         }
     </script>
