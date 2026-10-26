@@ -47,6 +47,21 @@ db.serialize(() => {
         date TEXT
     )`);
 
+    // Nueva tabla para guardar los métodos de pago configurables
+    db.run(`CREATE TABLE IF NOT EXISTS config_pagos (
+        id INTEGER PRIMARY KEY,
+        binance_email TEXT,
+        binance_pay_id TEXT,
+        paypal_email TEXT
+    )`);
+
+    // Insertar valores por defecto en config_pagos si está vacía
+    db.get(`SELECT COUNT(*) as count FROM config_pagos`, (err, row) => {
+        if (row && row.count === 0) {
+            db.run(`INSERT INTO config_pagos (id, binance_email, binance_pay_id, paypal_email) VALUES (1, 'pagos@rifasvip.com', '829301928', 'paypal@rifasvip.com')`);
+        }
+    });
+
     // Insertar rifas por defecto si la tabla está vacía
     db.get(`SELECT COUNT(*) as count FROM raffles`, (err, row) => {
         if (row.count === 0) {
@@ -82,6 +97,30 @@ db.serialize(() => {
             stmt.finalize();
             console.log('✨ Rifas iniciales cargadas en la base de datos.');
         }
+    });
+});
+
+// API Endpoints para Configuración de Pagos (Binance y PayPal)
+app.get('/api/config/pagos', (req, res) => {
+    db.get("SELECT * FROM config_pagos WHERE id = 1", (err, row) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(row || {});
+    });
+});
+
+app.post('/api/config/pagos', (req, res) => {
+    const { binance_email, binance_pay_id, paypal_email } = req.body;
+    const query = `
+        INSERT INTO config_pagos (id, binance_email, binance_pay_id, paypal_email)
+        VALUES (1, ?, ?, ?)
+        ON CONFLICT(id) DO UPDATE SET
+            binance_email = excluded.binance_email,
+            binance_pay_id = excluded.binance_pay_id,
+            paypal_email = excluded.paypal_email
+    `;
+    db.run(query, [binance_email, binance_pay_id, paypal_email], function(err) {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json({ success: true, message: "Métodos de pago actualizados correctamente" });
     });
 });
 

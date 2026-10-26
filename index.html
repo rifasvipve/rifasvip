@@ -249,10 +249,10 @@
                 </div>
             </div>
 
-            <!-- CONFIGURAR CUENTAS Y WHATSAPP -->
+            <!-- CONFIGURAR CUENTAS, WHATSAPP, BINANCE Y PAYPAL -->
             <div class="bg-dark-card border border-dark-border rounded-2xl p-4 sm:p-6 shadow-xl space-y-4">
                 <h3 class="text-base font-bold text-white flex items-center gap-2">
-                    <i class="fa-solid fa-wallet text-gold"></i> Configuración de Cuentas y WhatsApp
+                    <i class="fa-solid fa-wallet text-gold"></i> Configuración de Cuentas, Binance, PayPal y WhatsApp
                 </h3>
                 <form onsubmit="savePaymentSettings(event)" class="space-y-4">
                     <div class="p-3 border border-dark-border rounded-xl space-y-2">
@@ -275,9 +275,20 @@
                             <input type="text" id="cfg-venezuela-phone" placeholder="Teléfono" class="bg-dark-input border border-dark-border rounded-lg p-2 text-xs text-white">
                         </div>
                     </div>
+                    <div class="p-3 border border-dark-border rounded-xl space-y-2">
+                        <p class="font-bold text-gold text-xs">Binance Pay</p>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            <input type="text" id="cfg-binance-email" placeholder="Correo Binance" class="bg-dark-input border border-dark-border rounded-lg p-2 text-xs text-white">
+                            <input type="text" id="cfg-binance-payid" placeholder="Binance Pay ID" class="bg-dark-input border border-dark-border rounded-lg p-2 text-xs text-white">
+                        </div>
+                    </div>
+                    <div class="p-3 border border-dark-border rounded-xl space-y-2">
+                        <p class="font-bold text-gold text-xs">PayPal</p>
+                        <input type="text" id="cfg-paypal-email" placeholder="Correo PayPal" class="w-full bg-dark-input border border-dark-border rounded-lg p-2 text-xs text-white">
+                    </div>
                     <div class="flex justify-end">
                         <button type="submit" class="w-full sm:w-auto bg-gold text-black font-bold px-6 py-3 rounded-xl hover:bg-gold-light transition text-xs uppercase tracking-wider">
-                            Guardar Ajustes
+                            Guardar Ajustes de Pago
                         </button>
                     </div>
                 </form>
@@ -466,7 +477,8 @@
     <!-- SCRIPTS CONECTADOS A LA API DE SQLITE -->
     <script>
         const ADMIN_PASS = "12345678Vf";
-        const DEFAULT_PAYMENTS = {
+        
+        let paymentMethods = {
             adminWhatsapp: '04146343381',
             mercantil: { bank: 'Mercantil (0105)', rif: 'J-501234567', phone: '04146343381' },
             venezuela: { bank: 'Banco de Venezuela (0102)', rif: 'V-182345678', phone: '04146343381' },
@@ -476,16 +488,29 @@
 
         let raffles = [];
         let tickets = [];
-        let paymentMethods = JSON.parse(localStorage.getItem('vip_payments')) || DEFAULT_PAYMENTS;
         let exchangeRate = parseFloat(localStorage.getItem('vip_rate')) || 45.50;
 
         let currentSelectedRaffle = null;
         let selectedPayment = 'mercantil';
 
         window.addEventListener('DOMContentLoaded', () => {
+            loadPaymentSettings();
             loadAppData();
-            loadPaymentFormInputs();
         });
+
+        async function loadPaymentSettings() {
+            try {
+                const res = await fetch('/api/config/pagos');
+                const data = await res.json();
+                if (data) {
+                    if (data.binance_email) paymentMethods.binance.email = data.binance_email;
+                    if (data.binance_pay_id) paymentMethods.binance.payId = data.binance_pay_id;
+                    if (data.paypal_email) paymentMethods.paypal.email = data.paypal_email;
+                }
+            } catch (err) {
+                console.error("Error al cargar métodos de pago:", err);
+            }
+        }
 
         async function loadAppData() {
             try {
@@ -544,6 +569,7 @@
             } else if (tab === 'admin') {
                 document.getElementById('view-admin').classList.remove('hidden');
                 document.getElementById('admin-rate-input').value = exchangeRate;
+                loadPaymentFormInputs();
                 renderAdminTable();
                 renderAdminPurchasesTable();
             }
@@ -1003,9 +1029,12 @@
             document.getElementById('cfg-venezuela-bank').value = paymentMethods.venezuela.bank;
             document.getElementById('cfg-venezuela-rif').value = paymentMethods.venezuela.rif;
             document.getElementById('cfg-venezuela-phone').value = paymentMethods.venezuela.phone;
+            document.getElementById('cfg-binance-email').value = paymentMethods.binance.email;
+            document.getElementById('cfg-binance-payid').value = paymentMethods.binance.payId;
+            document.getElementById('cfg-paypal-email').value = paymentMethods.paypal.email;
         }
 
-        function savePaymentSettings(e) {
+        async function savePaymentSettings(e) {
             e.preventDefault();
             paymentMethods.adminWhatsapp = document.getElementById('cfg-admin-whatsapp').value.trim() || '04146343381';
             paymentMethods.mercantil = {
@@ -1018,8 +1047,33 @@
                 rif: document.getElementById('cfg-venezuela-rif').value,
                 phone: document.getElementById('cfg-venezuela-phone').value
             };
-            localStorage.setItem('vip_payments', JSON.stringify(paymentMethods));
-            alert('Ajustes y número de WhatsApp guardados.');
+            paymentMethods.binance = {
+                email: document.getElementById('cfg-binance-email').value,
+                payId: document.getElementById('cfg-binance-payid').value
+            };
+            paymentMethods.paypal = {
+                email: document.getElementById('cfg-paypal-email').value
+            };
+
+            try {
+                const response = await fetch('/api/config/pagos', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        binance_email: paymentMethods.binance.email,
+                        binance_pay_id: paymentMethods.binance.payId,
+                        paypal_email: paymentMethods.paypal.email
+                    })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    alert('¡Ajustes y cuentas de pago guardados correctamente en la base de datos!');
+                } else {
+                    alert('Error al guardar en el servidor.');
+                }
+            } catch (err) {
+                console.error(err);
+            }
         }
     </script>
 </body>
