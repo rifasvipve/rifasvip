@@ -282,6 +282,34 @@
                 </div>
             </div>
 
+            <!-- CONTROL Y VISUALIZACIÓN DE NÚMEROS (000 - 999) -->
+            <div class="bg-dark-card border border-gold/40 rounded-2xl p-4 sm:p-6 shadow-xl space-y-4">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-dark-border pb-3">
+                    <div>
+                        <h3 class="text-base font-bold text-gold flex items-center gap-2">
+                            <i class="fa-solid fa-border-all"></i> Control y Estado de Números (000 al 999)
+                        </h3>
+                        <p class="text-[11px] text-gray-400">Selecciona una rifa para inspeccionar qué boletos están disponibles o vendidos.</p>
+                    </div>
+                    <div class="w-full sm:w-64">
+                        <select id="admin-raffle-select" onchange="loadRaffleNumbersGrid()" class="w-full bg-dark-input border border-dark-border rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-gold">
+                            <option value="">-- Seleccionar Rifa --</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Leyenda de colores -->
+                <div class="flex items-center gap-4 text-xs font-semibold pt-1">
+                    <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-green-500 inline-block"></span> Disponible</span>
+                    <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-red-500 inline-block"></span> Vendido / Ocupado</span>
+                </div>
+
+                <!-- Malla de 1000 Números -->
+                <div id="numbers-grid-container" class="grid grid-cols-5 sm:grid-cols-10 md:grid-cols-20 gap-1.5 max-h-96 overflow-y-auto p-2 bg-black/60 rounded-xl border border-dark-border">
+                    <p class="col-span-full text-center py-6 text-gray-500 text-xs">Selecciona una rifa arriba para cargar la matriz de números.</p>
+                </div>
+            </div>
+
             <!-- HISTORIAL DE COMPRAS -->
             <div class="bg-dark-card border border-gold/40 rounded-2xl p-4 sm:p-6 shadow-2xl space-y-4">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-dark-border pb-3">
@@ -550,6 +578,7 @@
             } else if (tab === 'admin') {
                 document.getElementById('view-admin').classList.remove('hidden');
                 loadConfigFormInputs();
+                populateRaffleSelect();
                 renderAdminTable();
                 renderAdminPurchasesTable();
             }
@@ -939,6 +968,7 @@
                 document.getElementById('create-raffle-form').reset();
                 loadAppData();
                 renderAdminTable();
+                populateRaffleSelect();
             } catch (err) {
                 console.error(err);
             }
@@ -994,6 +1024,7 @@
                     await fetch(`/api/raffles/${id}`, { method: 'DELETE' });
                     loadAppData();
                     renderAdminTable();
+                    populateRaffleSelect();
                 } catch (err) {
                     console.error(err);
                 }
@@ -1045,6 +1076,61 @@
                 }
             } catch (err) {
                 console.error(err);
+            }
+        }
+
+        // Lógica de la Matriz de Control de Números (000-999)
+        function populateRaffleSelect() {
+            const select = document.getElementById('admin-raffle-select');
+            if (!select) return;
+            select.innerHTML = '<option value="">-- Seleccionar Rifa --</option>';
+            raffles.forEach(r => {
+                const opt = document.createElement('option');
+                opt.value = r.title;
+                opt.innerText = r.title;
+                select.appendChild(opt);
+            });
+        }
+
+        async function loadRaffleNumbersGrid() {
+            const title = document.getElementById('admin-raffle-select').value;
+            const gridContainer = document.getElementById('numbers-grid-container');
+            gridContainer.innerHTML = '';
+
+            if (!title) {
+                gridContainer.innerHTML = `<p class="col-span-full text-center py-6 text-gray-500 text-xs">Selecciona una rifa para cargar los números.</p>`;
+                return;
+            }
+
+            try {
+                const res = await fetch(`/api/raffles/${encodeURIComponent(title)}/taken-numbers`);
+                const takenMap = await res.json();
+
+                for (let i = 0; i < 1000; i++) {
+                    const numStr = i.toString().padStart(3, '0');
+                    const isTaken = takenMap[numStr];
+
+                    const btn = document.createElement('button');
+                    btn.className = `p-1 rounded text-[10px] font-mono font-bold transition ${
+                        isTaken 
+                        ? 'bg-red-600/30 text-red-400 border border-red-500/50 hover:bg-red-600 hover:text-white' 
+                        : 'bg-green-950/40 text-green-400 border border-green-800/40 hover:bg-green-600 hover:text-black'
+                    }`;
+                    btn.innerText = numStr;
+
+                    if (isTaken) {
+                        btn.title = `Comprador: ${isTaken.buyerName}\nTeléfono: ${isTaken.buyerPhone}\nRef: ${isTaken.ref}`;
+                        btn.onclick = () => {
+                            alert(`🎟️ Número: ${numStr}\n👤 Comprador: ${isTaken.buyerName}\n📱 Teléfono: ${isTaken.buyerPhone}\n🔢 Ref: ${isTaken.ref}`);
+                        };
+                    } else {
+                        btn.title = `Número ${numStr} DISPONIBLE`;
+                    }
+
+                    gridContainer.appendChild(btn);
+                }
+            } catch (err) {
+                console.error("Error al cargar números:", err);
             }
         }
     </script>
