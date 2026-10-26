@@ -231,6 +231,28 @@ app.delete('/api/tickets/:id', (req, res) => {
     });
 });
 
+// API para obtener números vendidos de una rifa (Matriz de Control)
+app.get('/api/raffles/:title/taken-numbers', (req, res) => {
+    const raffleTitle = req.params.title;
+    db.all(`SELECT buyerName, buyerPhone, ref, numbers FROM tickets WHERE raffleTitle = ?`, [raffleTitle], (err, rows) => {
+        if (err) return res.status(500).json({ error: err.message });
+        
+        let takenMap = {};
+        rows.forEach(row => {
+            const nums = JSON.parse(row.numbers);
+            nums.forEach(n => {
+                takenMap[n] = {
+                    buyerName: row.buyerName,
+                    buyerPhone: row.buyerPhone,
+                    ref: row.ref
+                };
+            });
+        });
+        
+        res.json(takenMap);
+    });
+});
+
 // Iniciar servidor
 app.listen(PORT, () => {
     console.log(`🚀 Servidor RIFAS VIP con SQLite corriendo en http://localhost:${PORT}`);
